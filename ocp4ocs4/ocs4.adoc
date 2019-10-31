@@ -112,6 +112,49 @@ grep cluster-api-cluster cluster-workerocs-us-east-1*
 
 The label for `cluster-api-cluster` should now match the results of `echo $CLUSTERID` from above for all occurrences.
 
+WARNING: *You need to update your region if you are not using us-east-1*
+
+First confirm your region
+[source,role="execute"]
+----
+oc get machines -n openshift-machine-api
+----
+.Example output:
+----
+NAME                                                 STATE     TYPE         REGION           ZONE              AGE
+cluster-akl-7461-dcxkm-master-0                      running   m4.xlarge    ap-southeast-1   ap-southeast-1a   68m
+cluster-akl-7461-dcxkm-master-1                      running   m4.xlarge    ap-southeast-1   ap-southeast-1b   68m
+cluster-akl-7461-dcxkm-master-2                      running   m4.xlarge    ap-southeast-1   ap-southeast-1c   68m
+cluster-akl-7461-dcxkm-worker-ap-southeast-1a-l2xrw  running   m4.4xlarge   ap-southeast-1   ap-southeast-1a   66m
+cluster-akl-7461-dcxkm-worker-ap-southeast-1b-bpjgc  running   m4.4xlarge   ap-southeast-1   ap-southeast-1b   66m
+----
+
+In the above example I need to update the region to ap-southeast-1
+[source,role="copypaste copypaste-warning"]
+----
+OCP_REGION=<region>
+echo $OCP_REGION
+----
+
+We are now going to modify the downloaded *machinesets* to use the correct `region` stored in the variable `$OCP_REGION`
+
+.Linux step*
+[source,role="execute"]
+----
+sed -i "s/us-east-1/${OCP_REGION}/g" cluster-workerocs-us-east-1a.yaml
+sed -i "s/us-east-1/${OCP_REGION}/g" cluster-workerocs-us-east-1b.yaml
+sed -i "s/us-east-1/${OCP_REGION}/g" cluster-workerocs-us-east-1c.yaml
+----
+
+Check that the `region` label has been changed to `$OCP_REGION`.
+
+[source,role="execute"]
+----
+grep "region:" cluster-workerocs-us-east-1*
+----
+
+The label for `region` should now match the results of `echo ${OCP_REGION}` from above for all occurrences.
+
 Now you are ready to create your 3 new OCP worker nodes using these modified *machinesets*.
 
 [source,role="execute"]
